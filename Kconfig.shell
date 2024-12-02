@@ -1,0 +1,19 @@
+# Copyright (c) 2023 Fabian Blatz <fabianblatz@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+config LV_Z_SHELL_VEETHREE
+	bool "LVGL Shell"
+	depends on SHELL_VEETHREE
+	help
+	  Enable LVGL shell for testing.
+
+if LV_Z_SHELL_VEETHREE
+
+config LV_Z_MAX_MONKEY_COUNT_VEETHREE
+	int "Maximum number of monkeys"
+	default 4
+	depends on LV_USE_MONKEY_VEETHREE
+	help
+	  Number of monkey instances that can exist in parallel
+
+endif
