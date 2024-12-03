@@ -9,16 +9,21 @@
 #include <lvgl.h>
 #include "lvgl_display.h"
 #include "lvgl_common_input.h"
-#ifdef CONFIG_LV_Z_USE_FILESYSTEM_VEETHREE
+#ifdef CONFIG_VG_LITE_VEETHREE
+// #include "/workdir/projects/external_modules/vg_lite_veethree/vglite/inc/vglite_support.h"
+#include "/workdir/projects/external_modules/vg_lite_veethree/include/lvgl_support.h"		  
+#endif
+#ifdef CONFIG_LV_Z_USE_FILESYSTEM
 #include "lvgl_fs.h"
 #endif
-#ifdef CONFIG_LV_Z_MEM_POOL_SYS_HEAP_VEETHREE
+#ifdef CONFIG_LV_Z_MEM_POOL_SYS_HEAP
 #include "lvgl_mem.h"
 #endif
-#include LV_MEM_CUSTOM_INCLUDE_VEETHREE
+#include LV_MEM_CUSTOM_INCLUDE
+
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(lvgl, CONFIG_LV_Z_LOG_LEVEL_VEETHREE);
+LOG_MODULE_REGISTER(lvgl, CONFIG_LV_Z_LOG_LEVEL);
 
 static lv_disp_drv_t disp_drv;
 struct lvgl_disp_data disp_data = {
@@ -27,7 +32,9 @@ struct lvgl_disp_data disp_data = {
 
 #define DISPLAY_NODE DT_CHOSEN(zephyr_display)
 
-#ifdef CONFIG_LV_Z_BUFFER_ALLOC_STATIC_VEETHREE
+#ifdef CONFIG_LV_Z_BUFFER_ALLOC_STATIC
+
+
 
 static lv_disp_draw_buf_t disp_buf;
 
@@ -35,24 +42,24 @@ static lv_disp_draw_buf_t disp_buf;
 #define DISPLAY_HEIGHT DT_PROP(DISPLAY_NODE, height)
 
 #define BUFFER_SIZE                                                                                \
-	(CONFIG_LV_Z_BITS_PER_PIXEL_VEETHREE *                                                              \
-	 ((CONFIG_LV_Z_VDB_SIZE_VEETHREE * DISPLAY_WIDTH * DISPLAY_HEIGHT) / 100) / 8)
+	(CONFIG_LV_Z_BITS_PER_PIXEL *                                                              \
+	 ((CONFIG_LV_Z_VDB_SIZE * DISPLAY_WIDTH * DISPLAY_HEIGHT) / 100) / 8)
 
-#define NBR_PIXELS_IN_BUFFER (BUFFER_SIZE * 8 / CONFIG_LV_Z_BITS_PER_PIXEL_VEETHREE)
+#define NBR_PIXELS_IN_BUFFER (BUFFER_SIZE * 8 / CONFIG_LV_Z_BITS_PER_PIXEL)
 
 /* NOTE: depending on chosen color depth buffer may be accessed using uint8_t *,
  * uint16_t * or uint32_t *, therefore buffer needs to be aligned accordingly to
  * prevent unaligned memory accesses.
  */
 static uint8_t buf0[BUFFER_SIZE]
-#ifdef CONFIG_LV_Z_VBD_CUSTOM_SECTION_VEETHREE
+#ifdef CONFIG_LV_Z_VBD_CUSTOM_SECTION
 	Z_GENERIC_SECTION(.lvgl_buf)
 #endif
 		__aligned(CONFIG_LV_Z_VDB_ALIGN);
 
-#ifdef CONFIG_LV_Z_DOUBLE_VDB_VEETHREE
+#ifdef CONFIG_LV_Z_DOUBLE_VDB
 static uint8_t buf1[BUFFER_SIZE]
-#ifdef CONFIG_LV_Z_VBD_CUSTOM_SECTION_VEETHREE
+#ifdef CONFIG_LV_Z_VBD_CUSTOM_SECTION
 	Z_GENERIC_SECTION(.lvgl_buf)
 #endif
 		__aligned(CONFIG_LV_Z_VDB_ALIGN);
@@ -60,7 +67,7 @@ static uint8_t buf1[BUFFER_SIZE]
 
 #endif /* CONFIG_LV_Z_BUFFER_ALLOC_STATIC */
 
-#if CONFIG_LV_Z_LOG_LEVEL_VEETHREE != 0
+#if CONFIG_LV_Z_LOG_LEVEL != 0
 /*
  * In LVGLv8 the signature of the logging callback has changes and it no longer
  * takes the log level as an integer argument. Instead, the log level is now
@@ -97,7 +104,7 @@ static void lvgl_log(const char *buf)
 }
 #endif
 
-#ifdef CONFIG_LV_Z_BUFFER_ALLOC_STATIC_VEETHREE
+#ifdef CONFIG_LV_Z_BUFFER_ALLOC_STATIC
 
 static int lvgl_allocate_rendering_buffers(lv_disp_drv_t *disp_driver)
 {
@@ -119,7 +126,7 @@ static int lvgl_allocate_rendering_buffers(lv_disp_drv_t *disp_driver)
 	}
 
 	disp_driver->draw_buf = &disp_buf;
-#ifdef CONFIG_LV_Z_DOUBLE_VDB_VEETHREE
+#ifdef CONFIG_LV_Z_DOUBLE_VDB
 	lv_disp_draw_buf_init(disp_driver->draw_buf, &buf0, &buf1, NBR_PIXELS_IN_BUFFER);
 #else
 	lv_disp_draw_buf_init(disp_driver->draw_buf, &buf0, NULL, NBR_PIXELS_IN_BUFFER);
@@ -166,25 +173,25 @@ static int lvgl_allocate_rendering_buffers(lv_disp_drv_t *disp_driver)
 		return -ENOTSUP;
 	}
 
-	buf0 = LV_MEM_CUSTOM_ALLOC_VEETHREE(buf_size);
+	buf0 = LV_MEM_CUSTOM_ALLOC(buf_size);
 	if (buf0 == NULL) {
 		LOG_ERR("Failed to allocate memory for rendering buffer");
 		return -ENOMEM;
 	}
 
-#ifdef CONFIG_LV_Z_DOUBLE_VDB_VEETHREE
-	buf1 = LV_MEM_CUSTOM_ALLOC_VEETHREE(buf_size);
+#ifdef CONFIG_LV_Z_DOUBLE_VDB
+	buf1 = LV_MEM_CUSTOM_ALLOC(buf_size);
 	if (buf1 == NULL) {
-		LV_MEM_CUSTOM_FREE_VEETHREE(buf0);
+		LV_MEM_CUSTOM_FREE(buf0);
 		LOG_ERR("Failed to allocate memory for rendering buffer");
 		return -ENOMEM;
 	}
 #endif
 
-	disp_driver->draw_buf = LV_MEM_CUSTOM_ALLOC_VEETHREE(sizeof(lv_disp_draw_buf_t));
+	disp_driver->draw_buf = LV_MEM_CUSTOM_ALLOC(sizeof(lv_disp_draw_buf_t));
 	if (disp_driver->draw_buf == NULL) {
-		LV_MEM_CUSTOM_FREE_VEETHREE(buf0);
-		LV_MEM_CUSTOM_FREE_VEETHREE(buf1);
+		LV_MEM_CUSTOM_FREE(buf0);
+		LV_MEM_CUSTOM_FREE(buf1);
 		LOG_ERR("Failed to allocate memory to store rendering buffers");
 		return -ENOMEM;
 	}
@@ -205,15 +212,18 @@ static int lvgl_init(void)
 		return -ENODEV;
 	}
 
-#ifdef CONFIG_LV_Z_MEM_POOL_SYS_HEAP_VEETHREE
+#ifdef CONFIG_LV_Z_MEM_POOL_SYS_HEAP
 	lvgl_heap_init();
 #endif
 
-#if CONFIG_LV_Z_LOG_LEVEL_VEETHREE != 0
+#if CONFIG_LV_Z_LOG_LEVEL != 0
 	// lv_log_register_print_cb(lvgl_log);
 #endif
 
 	lv_init();
+
+	// BOARD_InitVGliteClock();
+	lv_port_disp_init();
 
 // #ifdef CONFIG_LV_Z_USE_FILESYSTEM
 // 	lvgl_fs_init();

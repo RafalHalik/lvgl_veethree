@@ -15,8 +15,9 @@ zephyr_library()
 zephyr_include_directories(${LVGL_DIR}/src/)
 zephyr_include_directories(include)
 
-zephyr_compile_definitions(LV_CONF_INCLUDE_SIMPLE_VEETHREE=1)
-zephyr_compile_definitions(LV_CONF_PATH_VEETHREE=${CMAKE_CURRENT_SOURCE_DIR}/include/lv_conf.h)
+zephyr_compile_definitions(LV_CONF_INCLUDE_SIMPLE=1)
+zephyr_compile_definitions(LV_CONF_PATH=${CMAKE_CURRENT_SOURCE_DIR}/include/lv_conf.h)
+
 
 zephyr_library_sources(
     ${LVGL_DIR}/src/core/lv_disp.c
@@ -227,15 +228,15 @@ zephyr_library_sources(
     lvgl_display_mono.c
 )
 
-zephyr_library_sources_ifdef(CONFIG_LV_Z_USE_FILESYSTEM_VEETHREE lvgl_fs.c)
-zephyr_library_sources_ifdef(CONFIG_LV_Z_MEM_POOL_SYS_HEAP_VEETHREE lvgl_mem.c)
-zephyr_library_sources_ifdef(CONFIG_LV_Z_SHELL_VEETHREE      lvgl_shell.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_USE_FILESYSTEM lvgl_fs.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_MEM_POOL_SYS_HEAP lvgl_mem.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_SHELL      lvgl_shell.c)
 
 zephyr_library_sources(input/lvgl_common_input.c)
-zephyr_library_sources_ifdef(CONFIG_LV_Z_POINTER_INPUT_VEETHREE input/lvgl_pointer_input.c)
-zephyr_library_sources_ifdef(CONFIG_LV_Z_BUTTON_INPUT_VEETHREE input/lvgl_button_input.c)
-zephyr_library_sources_ifdef(CONFIG_LV_Z_ENCODER_INPUT_VEETHREE input/lvgl_encoder_input.c)
-zephyr_library_sources_ifdef(CONFIG_LV_Z_KEYPAD_INPUT_VEETHREE input/lvgl_keypad_input.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_POINTER_INPUT input/lvgl_pointer_input.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_BUTTON_INPUT input/lvgl_button_input.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_ENCODER_INPUT input/lvgl_encoder_input.c)
+zephyr_library_sources_ifdef(CONFIG_LV_Z_KEYPAD_INPUT input/lvgl_keypad_input.c)
 
 zephyr_library_link_libraries(LVGL_VEETHREE)
 target_link_libraries(LVGL_VEETHREE INTERFACE zephyr_interface)
